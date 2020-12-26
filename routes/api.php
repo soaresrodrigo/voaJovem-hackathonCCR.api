@@ -32,6 +32,6 @@ Route::group(['middleware' => ['apiJwt']], function () {
   Route::apiResource('courses', CourseController::class);
 
   // Estudantes
-  Route::get('students/{id}/courses', [StudentController::class, 'courses']);
+  Route::get('students/{id}/details', [StudentController::class, 'details']);
   Route::apiResource('students', StudentController::class);
 });

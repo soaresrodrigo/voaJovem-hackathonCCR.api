@@ -22,15 +22,17 @@ class StudentController extends MasterApiController
         $dataForm = $request->all();
 
         // Verifica se o usuário é jovem
-        $student = User::find($dataForm['student_id']);
-        if ($student->level !== 'young') return response()->json(['error' => 'Usuário não tem perfil de jovem']);
+        $user = User::find($dataForm['student_id']);
+        if ($user->level !== 'young') return response()->json(['error' => 'Usuário não tem perfil de jovem']);
 
-        if (Course::where('student_id', $student->id)) {
-            dd('encontrado');
-        } else {
-            dd('não encontrado');
+        $students = Student::all()->where('student_id', $dataForm['student_id']);
+
+        foreach ($students as $student) {
+            if ($student['course_id'] == $dataForm['course_id']) {
+                return response()->json(['error' => 'Jovem já está cadastrado no curso']);
+                dd($student);
+            }
         }
-
         $data = $this->model->create($dataForm);
         return response()->json($data, 201);
     }
@@ -43,15 +45,27 @@ class StudentController extends MasterApiController
         $dataForm = $request->all();
 
         // Verifica se o usuário é jovem
-        $student = User::find($id);
+        $student = User::find($dataForm['student_id']);
         if ($student->level !== 'young') return response()->json(['error' => 'Usuário não tem perfil de jovem']);
+
+        $students = Student::all()->where('student_id', $dataForm['student_id']);
+
+        if (isset($dataForm['course_id'])) {
+            foreach ($students as $student) {
+                if ($student['course_id'] == $dataForm['course_id']) {
+                    return response()->json(['error' => 'Jovem já está cadastrado no curso']);
+                    dd($student);
+                }
+            }
+        }
 
         $data->update($dataForm);
         return response()->json($data);
     }
 
-    public function courses ($id) { 
-        if (!$data = $this->model->with(['user', 'courses'])->find($id)) return response()->json(['error' => 'Nada foi encontrado'], 404);
+    public function details ($id) { 
+        if (!$data = $this->model->with(['user', 'course'])->find($id)) return response()->json(['error' => 'Nada foi encontrado'], 404);
+        // $data = $data->with('courses');
         return response()->json($data);
     }
 }
